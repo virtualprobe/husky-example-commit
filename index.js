@@ -6,10 +6,7 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 app.get('/test', (req, res) => {
-    res.send('hello test!');
-});
-app.get('/testV2', (req, res) => {
-    res.send('hello testV2!');
+    res.send('versioning test!');
 });
 
 app.listen(port, () => {
