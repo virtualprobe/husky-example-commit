@@ -67,7 +67,6 @@ jobs:
           MINOR=${VERSION_PARTS[1]}
           PATCH=${VERSION_PARTS[2]}
 
-          # Use PR_COMMIT_MESSAGE if set, otherwise use LAST_COMMIT_MESSAGE
           COMMIT_MESSAGE=${{ env.PR_COMMIT_MESSAGE || env.LAST_COMMIT_MESSAGE }}
 
           if echo "$COMMIT_MESSAGE" | grep -qE "^(Breaking):"; then
