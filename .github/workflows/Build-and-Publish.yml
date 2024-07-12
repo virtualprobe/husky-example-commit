@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
 
@@ -38,35 +38,26 @@ jobs:
         run: |
           git fetch --tags
           CURRENT_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "v0.0.0")
-          echo "Current tag: $CURRENT_TAG"
           echo "CURRENT_TAG=$CURRENT_TAG" >> $GITHUB_ENV
 
       - name: Get the last commit message and prefix
         id: get_last_commit_message
         run: |
           LAST_COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          echo "Last commit message: $LAST_COMMIT_MESSAGE"
           if echo "$LAST_COMMIT_MESSAGE" | grep -q "Merge pull request"; then
             # Get the commit message from the PR
             PR_COMMIT_MESSAGE=$(git log -2 --pretty=%B | tail -n 1)
             COMMIT_MESSAGE=$PR_COMMIT_MESSAGE
-            echo "PR commit message: $PR_COMMIT_MESSAGE"
           else
             COMMIT_MESSAGE=$LAST_COMMIT_MESSAGE
-            echo "Using last commit message: $LAST_COMMIT_MESSAGE"
           fi
           COMMIT_MESSAGE_PREFIX=$(echo "$COMMIT_MESSAGE" | awk -F: '{print $1}' | tr '[:upper:]' '[:lower:]')
-          echo "Commit message prefix: $COMMIT_MESSAGE_PREFIX"
           echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
           echo "COMMIT_MESSAGE_PREFIX=$COMMIT_MESSAGE_PREFIX" >> $GITHUB_ENV
 
       - name: Increment version
         id: increment_version
         run: |
-          echo "Current tag: ${{ env.CURRENT_TAG }}"
-          echo "Commit message: ${{ env.COMMIT_MESSAGE }}"
-          echo "Commit message prefix: ${{ env.COMMIT_MESSAGE_PREFIX }}"
-
           TAG=${{ env.CURRENT_TAG }}
           VERSION=$(echo $TAG | sed 's/^v//')
           IFS='.' read -r -a VERSION_PARTS <<< "$VERSION"
@@ -74,23 +65,29 @@ jobs:
           MINOR=${VERSION_PARTS[1]}
           PATCH=${VERSION_PARTS[2]}
 
-          echo "Current version - Major: $MAJOR, Minor: $MINOR, Patch: $PATCH"
-
-          if echo "${{ env.COMMIT_MESSAGE_PREFIX }}" | grep -qE "^(breaking)"; then
-            MAJOR=$((MAJOR + 1))
-            MINOR=0
-            PATCH=0
-          elif echo "${{ env.COMMIT_MESSAGE_PREFIX }}" | grep -qE "^(feature)"; then
-            MINOR=$((MINOR + 1))
-            PATCH=0
-          elif echo "${{ env.COMMIT_MESSAGE_PREFIX }}" | grep -qE "^(fix)"; then
-            PATCH=$((PATCH + 1))
-          elif echo "${{ env.COMMIT_MESSAGE_PREFIX }}" | grep -qE "^(other)"; then
-            # No version increment for 'Other'
-            NEW_TAG=$TAG
-            echo "No version increment for 'Other' commits"
+          if echo "${{ env.COMMIT_MESSAGE_PREFIX }}" | grep -iqE "^(breaking|feature|fix|other|revert)"; then
+            PREFIX=$(echo "${{ env.COMMIT_MESSAGE_PREFIX }}" | tr '[:upper:]' '[:lower:]')
+            case $PREFIX in
+              breaking)
+                MAJOR=$((MAJOR + 1))
+                MINOR=0
+                PATCH=0
+                ;;
+              feature)
+                MINOR=$((MINOR + 1))
+                PATCH=0
+                ;;
+              fix)
+                PATCH=$((PATCH + 1))
+                ;;
+              other|revert)
+                NEW_TAG=$TAG
+                ;;
+              *)
+                NEW_TAG=$TAG
+                ;;
+            esac
           else
-            echo "Unrecognized commit message prefix. No version increment."
             NEW_TAG=$TAG
           fi
 
@@ -98,7 +95,6 @@ jobs:
             NEW_TAG="v$MAJOR.$MINOR.$PATCH"
           fi
 
-          echo "New tag: $NEW_TAG"
           echo "::set-output name=NEW_TAG::$NEW_TAG"
 
       - name: Create new tag
