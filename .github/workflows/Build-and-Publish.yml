@@ -41,7 +41,7 @@ jobs:
           echo "Current tag: $CURRENT_TAG"
           echo "CURRENT_TAG=$CURRENT_TAG" >> $GITHUB_ENV
 
-      - name: Get the last commit message
+      - name: Get the last commit message and prefix
         id: get_last_commit_message
         run: |
           LAST_COMMIT_MESSAGE=$(git log -1 --pretty=%B)
@@ -49,19 +49,23 @@ jobs:
           if echo "$LAST_COMMIT_MESSAGE" | grep -q "Merge pull request"; then
             # Get the commit message from the PR
             PR_COMMIT_MESSAGE=$(git log -2 --pretty=%B | tail -n 1)
+            COMMIT_MESSAGE=$PR_COMMIT_MESSAGE
             echo "PR commit message: $PR_COMMIT_MESSAGE"
-            echo "PR_COMMIT_MESSAGE=$PR_COMMIT_MESSAGE" >> $GITHUB_ENV
-            echo "Using PR commit message: $PR_COMMIT_MESSAGE"
           else
-            echo "LAST_COMMIT_MESSAGE=$LAST_COMMIT_MESSAGE" >> $GITHUB_ENV
+            COMMIT_MESSAGE=$LAST_COMMIT_MESSAGE
             echo "Using last commit message: $LAST_COMMIT_MESSAGE"
           fi
+          COMMIT_MESSAGE_PREFIX=$(echo "$COMMIT_MESSAGE" | awk -F: '{print $1}' | tr '[:upper:]' '[:lower:]')
+          echo "Commit message prefix: $COMMIT_MESSAGE_PREFIX"
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
+          echo "COMMIT_MESSAGE_PREFIX=$COMMIT_MESSAGE_PREFIX" >> $GITHUB_ENV
 
       - name: Increment version
         id: increment_version
         run: |
           echo "Current tag: ${{ env.CURRENT_TAG }}"
-          echo "Commit message used for versioning: ${{ env.PR_COMMIT_MESSAGE || env.LAST_COMMIT_MESSAGE }}"
+          echo "Commit message: ${{ env.COMMIT_MESSAGE }}"
+          echo "Commit message prefix: ${{ env.COMMIT_MESSAGE_PREFIX }}"
 
           TAG=${{ env.CURRENT_TAG }}
           VERSION=$(echo $TAG | sed 's/^v//')
@@ -72,23 +76,16 @@ jobs:
 
           echo "Current version - Major: $MAJOR, Minor: $MINOR, Patch: $PATCH"
 
-          # Use PR_COMMIT_MESSAGE if set, otherwise use LAST_COMMIT_MESSAGE
-          COMMIT_MESSAGE=${{ env.PR_COMMIT_MESSAGE || env.LAST_COMMIT_MESSAGE }}
-          echo "Commit message: $COMMIT_MESSAGE"
-
-          COMMIT_MESSAGE_PREFIX=$(echo "$COMMIT_MESSAGE" | cut -d ':' -f 1 | awk '{$1=$1};1' | tr '[:upper:]' '[:lower:]')
-          echo "Commit message prefix: $COMMIT_MESSAGE_PREFIX"
-
-          if echo "$COMMIT_MESSAGE_PREFIX" | grep -qE "^(breaking)"; then
+          if echo "${{ env.COMMIT_MESSAGE_PREFIX }}" | grep -qE "^(breaking)"; then
             MAJOR=$((MAJOR + 1))
             MINOR=0
             PATCH=0
-          elif echo "$COMMIT_MESSAGE_PREFIX" | grep -qE "^(feature)"; then
+          elif echo "${{ env.COMMIT_MESSAGE_PREFIX }}" | grep -qE "^(feature)"; then
             MINOR=$((MINOR + 1))
             PATCH=0
-          elif echo "$COMMIT_MESSAGE_PREFIX" | grep -qE "^(fix)"; then
+          elif echo "${{ env.COMMIT_MESSAGE_PREFIX }}" | grep -qE "^(fix)"; then
             PATCH=$((PATCH + 1))
-          elif echo "$COMMIT_MESSAGE_PREFIX" | grep -qE "^(other)"; then
+          elif echo "${{ env.COMMIT_MESSAGE_PREFIX }}" | grep -qE "^(other)"; then
             # No version increment for 'Other'
             NEW_TAG=$TAG
             echo "No version increment for 'Other' commits"
