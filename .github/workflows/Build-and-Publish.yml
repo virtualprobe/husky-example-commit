@@ -69,7 +69,9 @@ jobs:
 
           # Use PR_COMMIT_MESSAGE if set, otherwise use LAST_COMMIT_MESSAGE
           COMMIT_MESSAGE=${{ env.PR_COMMIT_MESSAGE || env.LAST_COMMIT_MESSAGE }}
+          echo $COMMIT_MESSAGE
           COMMIT_MESSAGE_PREFIX=$(echo "$COMMIT_MESSAGE" | awk '{print tolower($1)}')
+          echo $COMMIT_MESSAGE
 
           if echo "$COMMIT_MESSAGE_PREFIX" | grep -qE "^(breaking):"; then
             MAJOR=$((MAJOR + 1))
