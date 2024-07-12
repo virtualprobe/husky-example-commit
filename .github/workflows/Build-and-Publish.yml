@@ -47,7 +47,15 @@ jobs:
         id: get_last_commit_message
         run: |
           LAST_COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          echo "LAST_COMMIT_MESSAGE=$LAST_COMMIT_MESSAGE" >> $GITHUB_ENV
+          if echo "$LAST_COMMIT_MESSAGE" | grep -q "Merge pull request"; then
+            # Get the commit message from the PR
+            PR_COMMIT_MESSAGE=$(git log -2 --pretty=%B | tail -n 1)
+            echo "PR_COMMIT_MESSAGE=$PR_COMMIT_MESSAGE" >> $GITHUB_ENV
+            echo "Using PR commit message: $PR_COMMIT_MESSAGE"
+          else
+            echo "LAST_COMMIT_MESSAGE=$LAST_COMMIT_MESSAGE" >> $GITHUB_ENV
+            echo "Using last commit message: $LAST_COMMIT_MESSAGE"
+          fi
 
       - name: Increment version
         id: increment_version
