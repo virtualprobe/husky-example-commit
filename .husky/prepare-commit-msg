@@ -1,0 +1,1 @@
+exec < /dev/tty && npx conventional-commit-husky handleChoice "$1"
