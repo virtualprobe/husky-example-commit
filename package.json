@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +13,9 @@
   "description": "",
   "dependencies": {
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "conventional-commit-husky": "^1.0.1",
+    "husky": "^9.0.11"
   }
 }
