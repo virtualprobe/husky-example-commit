@@ -120,6 +120,9 @@ jobs:
       - name: Build and push Docker image
         run: |
           VERSION=${{ needs.versioning.outputs.NEW_TAG }}
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/fincantieri_fe:latest -t ${{ secrets.DOCKER_USERNAME }}/fincantieri_fe:$VERSION .
-          docker push ${{ secrets.DOCKER_USERNAME }}/fincantieri_fe:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/fincantieri_fe:$VERSION
+          REPO_NAME=${{ github.repository }}
+          DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/${REPO_NAME}
+
+          docker build -t ${DOCKER_IMAGE}:latest -t ${DOCKER_IMAGE}:$VERSION .
+          docker push ${DOCKER_IMAGE}:latest
+          docker push ${DOCKER_IMAGE}:$VERSION
