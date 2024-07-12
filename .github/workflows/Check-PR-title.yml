@@ -1,0 +1,25 @@
+name: Check PR Title
+
+on:
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  check-title:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check PR Title
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "PR Title: $PR_TITLE"
+
+          if echo "$PR_TITLE" | grep -iqE "^(breaking|feature|fix|other|revert):"; then
+            echo "PR title is valid."
+          else
+            echo "PR title is invalid. It must start with one of the following: breaking, feature, fix, other, revert."
+            exit 1
+          fi
