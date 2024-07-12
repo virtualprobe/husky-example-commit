@@ -67,18 +67,20 @@ jobs:
           MINOR=${VERSION_PARTS[1]}
           PATCH=${VERSION_PARTS[2]}
 
-          COMMIT_MESSAGE=${{ env.LAST_COMMIT_MESSAGE }}
+          # Use PR_COMMIT_MESSAGE if set, otherwise use LAST_COMMIT_MESSAGE
+          COMMIT_MESSAGE=${{ env.PR_COMMIT_MESSAGE || env.LAST_COMMIT_MESSAGE }}
+          COMMIT_MESSAGE_PREFIX=$(echo "$COMMIT_MESSAGE" | awk '{print tolower($1)}')
 
-          if echo "$COMMIT_MESSAGE" | grep -qE "^(Breaking):"; then
+          if echo "$COMMIT_MESSAGE_PREFIX" | grep -qE "^(breaking):"; then
             MAJOR=$((MAJOR + 1))
             MINOR=0
             PATCH=0
-          elif echo "$COMMIT_MESSAGE" | grep -qE "^(Feature):"; then
+          elif echo "$COMMIT_MESSAGE_PREFIX" | grep -qE "^(feature):"; then
             MINOR=$((MINOR + 1))
             PATCH=0
-          elif echo "$COMMIT_MESSAGE" | grep -qE "^(Fix):"; then
+          elif echo "$COMMIT_MESSAGE_PREFIX" | grep -qE "^(fix):"; then
             PATCH=$((PATCH + 1))
-          elif echo "$COMMIT_MESSAGE" | grep -qE "^(Other):"; then
+          elif echo "$COMMIT_MESSAGE_PREFIX" | grep -qE "^(other):"; then
             # No version increment for 'Other'
             NEW_TAG=$TAG
             echo "No version increment for 'Other' commits"
