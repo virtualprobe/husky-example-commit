@@ -58,7 +58,7 @@ jobs:
       - id: 'deploy'
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
-          service: ${{ github.repository }}
+          service: ${{ secrets.GCP_PROJECT_ID }}
           image: '${{ github.repository }}:${{ github.ref_name }}'
 
       - name: 'Use output'
