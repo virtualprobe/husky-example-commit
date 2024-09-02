@@ -60,5 +60,4 @@ jobs:
           gcloud run deploy virtualprobe \
             --image tiziano093/husky-example-commit:cloud-run-deploy-test \
             --format json \
-            --region us-central1 \
-            --set-env-vars PORT=300
+            --region us-central1 
