@@ -56,10 +56,4 @@ jobs:
           workload_identity_provider: 'projects/1008932920530/locations/global/workloadIdentityPools/github/providers/husky-example-commit'
 
       - id: 'deploy'
-        uses: 'google-github-actions/deploy-cloudrun@v2'
-        with:
-          service: ${{ secrets.GCP_PROJECT_ID }}
-          image: '${{ github.repository }}:${{ github.ref_name }}'
-
-      - name: 'Use output'
-        run: 'curl "${{ steps.deploy.outputs.url }}"'
+        run: 'gcloud run deploy virtualprobe --image tiziano093/husky-example-commit:cloud-run-deploy-test --format json --region us-central1'
