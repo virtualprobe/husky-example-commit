@@ -58,8 +58,8 @@ jobs:
       - id: 'deploy'
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
-          service: '$(basename ${{ github.repository }})'
-          image: ${DOCKER_IMAGE}:${VERSION}
+          service: ${{ github.repository }}
+          image: '${{ github.repository }}:${{ github.ref_name }}'
 
       - name: 'Use output'
         run: 'curl "${{ steps.deploy.outputs.url }}"'
