@@ -51,7 +51,6 @@ jobs:
         with:
           project_id: 'virtualprobe'
           workload_identity_provider: 'projects/1008932920530/locations/global/workloadIdentityPools/github'
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
           service_account: ${{ secrets.GCP_SA_EMAIL }}
 
       - id: 'deploy'
