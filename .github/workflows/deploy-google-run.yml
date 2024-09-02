@@ -50,12 +50,10 @@ jobs:
     needs: docker_build_and_publish
     steps:
       - uses: 'actions/checkout@v4'
-
       - uses: 'google-github-actions/auth@v2'
         with:
           project_id: 'virtualprobe'
           workload_identity_provider: 'projects/1008932920530/locations/global/workloadIdentityPools/github'
-          service_account: ${{ secrets.GPC_SERVICE_ACCOUNT }}
 
       - id: 'deploy'
         uses: 'google-github-actions/deploy-cloudrun@v2'
