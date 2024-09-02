@@ -3,6 +3,10 @@ name: Deploy to Cloud Run
 on:
   workflow_dispatch:  # Aggiunta del trigger manuale
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
