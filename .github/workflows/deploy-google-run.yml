@@ -53,7 +53,7 @@ jobs:
       - uses: 'google-github-actions/auth@v2'
         with:
           project_id: 'virtualprobe'
-          workload_identity_provider: 'projects/1008932920530/locations/global/workloadIdentityPools/github/providers/husky-example-commit'
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - id: 'deploy'
         run: 'gcloud run deploy virtualprobe --image tiziano093/husky-example-commit:cloud-run-deploy-test --format json --region us-central1'
